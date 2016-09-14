@@ -1,5 +1,5 @@
 /**
- * Global variables
+ * General variables
  */
 var contacts = $(".student-item.cf"); // Keeps all the contact elements
 var allContacts = []; // Keeps the indexes of all contact elements
@@ -9,6 +9,8 @@ for (var i = 0; i < contacts.length; i++) {
 var filteredContacts = allContacts; // Keeps the indexes of elements on display
 var itemsPerPage = 10;
 var numberOfPages = Math.ceil(filteredContacts.length / itemsPerPage);
+
+
 
 
 /**
@@ -26,6 +28,8 @@ var HTMLPagination  = '<div class="pagination">';
     HTMLPagination += '</div>';
 
 
+
+
 /**
  * Display range of contact in list
  */
@@ -36,10 +40,12 @@ function displayContactRange(rangeFrom, rangeTo) {
   // and show those contacts
   if (filteredContacts.length > 0) {
     for (var i = rangeFrom - 1; i < rangeTo; i++) {
-      $(contacts[filteredContacts[i]]).fadeIn();
+      $(contacts[filteredContacts[i]]).finish().fadeIn();
     }
   }
 }
+
+
 
 
 /**
@@ -50,7 +56,7 @@ function displayContactPage(pageNumber) {
   // page and display them on screen.
   if (pageNumber > 0 && pageNumber <= numberOfPages) {
     var rangeFrom = (pageNumber - 1) * itemsPerPage + 1;
-    var rangeTo = rangeFrom + itemsPerPage;
+    var rangeTo = rangeFrom + itemsPerPage - 1;
     displayContactRange(rangeFrom, rangeTo);
     // Change the current page active state
     $('.pagination a').removeClass('active');
@@ -59,37 +65,45 @@ function displayContactPage(pageNumber) {
   // Hide everything and display a message to user.
   } else {
    contacts.hide();
-   $('<h2 class="error">No matching records were found.</h2>').insertAfter('.page-header');
+   $('<h2 class="error">No matching records found.</h2>').insertAfter('.page-header');
   }
 }
+
+
 
 
 /**
  * Paginate content
  */
 function paginateContacts() {
+  // Execute only of the user is not typing in the SeachBox
+  // if (!inProgress) {
+  //   inProgress = true;
+    // Calculate the number of pages required
+    numberOfPages = Math.ceil(filteredContacts.length / itemsPerPage);
+    var navList = $(".pagination ul");
+    navList.empty();
 
-  // Calculate the number of pages required
-  numberOfPages = Math.ceil(filteredContacts.length / itemsPerPage);
-  var navList = $(".pagination ul");
-  navList.empty();
-
-  // If more than one page, then render the pagination controls
-  if (numberOfPages > 1) {
-    $('.pagination').show();
-    for (var i = 1; i <= numberOfPages; i++) {
-      navList.append('<li><a href="#">' + i + '</a></li> ');
+    // If more than one page, then render the pagination controls
+    if (numberOfPages > 1) {
+      for (var i = 1; i <= numberOfPages; i++) {
+        navList.append('<li><a href="#">' + i + '</a></li> ');
+      }
+      $('.pagination').finish().fadeIn();
+      // Bind click events to the anchor element of every new button
+      navList.find('a').click(function(e){
+        e.preventDefault();
+        displayContactPage($(this).text());
+      });
+    } else {
+      $('.pagination').hide();
     }
-    // Bind click events to the anchor element of every new button
-    navList.find('a').click(function(e){
-      e.preventDefault();
-      displayContactPage($(this).text());
-    });
-  } else {
-    $('.pagination').hide();
-  }
-  displayContactPage(1);
+    displayContactPage(1);
+  //   inProgress = false;
+  // }
 }
+
+
 
 
 /**
@@ -97,27 +111,26 @@ function paginateContacts() {
  */
 function filterContacts(keyword) {
   // Remove any errors
-  $('.error').remove();
-  // If the keyword provided is not empty
-  if (keyword) {
-    // Start with an empty list
-    filteredContacts = [];
-    var filter = keyword.toLowerCase();
-    // Iterate through all contacts and add the indexes of those
-    // that match the criteria to the filteredContacts list
-    for (var i = 0; i < contacts.length; i++) {
-      var name = $(contacts[i]).find('h3').text().toLowerCase();
-      var email = $(contacts[i]).find('.email').text().toLowerCase();
-      if ((name.indexOf(filter) !== -1) || (email.indexOf(filter) !== -1)) {
-        filteredContacts.push(i);
+    $('.error').remove();
+    // If the keyword provided is not empty
+    if (keyword) {
+      // Start with an empty list
+      filteredContacts = [];
+      var filter = keyword.toLowerCase();
+      // Iterate through all contacts and add the indexes of those
+      // that match the criteria to the filteredContacts list
+      for (var i = 0; i < contacts.length; i++) {
+        var name = $(contacts[i]).find('h3').text().toLowerCase();
+        var email = $(contacts[i]).find('.email').text().toLowerCase();
+        if ((name.indexOf(filter) !== -1) || (email.indexOf(filter) !== -1)) {
+          filteredContacts.push(i);
+        }
       }
+    } else {
+      // If the keyword provided was empty, select all contacts
+      filteredContacts = allContacts;
     }
-  } else {
-    // If the keyword provided was empty, select all contacts
-    filteredContacts = allContacts;
-  }
 }
-
 
 
 
@@ -132,6 +145,8 @@ $(".page").append(HTMLPagination);
 
 // Paginate content
 paginateContacts();
+
+
 
 
 /**
